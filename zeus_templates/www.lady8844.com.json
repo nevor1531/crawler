@@ -1,0 +1,73 @@
+{
+    "name": "爱美女性网",
+    "entities": [
+        {
+            "name": "entity1",
+            "attrs": {
+                "title": ["xpath", "//div[@class='main']/h1/text()"],
+                "content": [
+                    ["xpath", "//div[@class='article-content']/*", true],
+                    ["join", ""]
+                ],
+                "image_urls": [
+                    ["xpath", "//div[@class='article-content']/descendant::img/@src", true],
+                    ["url_join"]
+                ],
+                "description": ["xpath", "//meta[@name='description']/@content"],
+                "source_name": [
+                    ["xpath", "//div[contains(@class, 'article-info')]/descendant::span[contains(text(), '\u6765\u6e90\uff1a')]/text()"],
+                    // 去掉前辍"来源：“
+                    ["re", "(?<=\u6765\u6e90\uff1a)[[\u4e00-\u9fa5\\w]+"]
+                ],
+                "source_url": ["const", ""],
+                "pub_time": ["xpath", "//div[contains(@class, 'article-info')]/div/span[1]/text()"],
+                "abstraction": [
+                    ["xpath", "//div[@class='article-guide']/p/text()"]
+                ]
+            },
+            "pager": {
+                "next_url": ["link", "//a[@class='current']/following-sibling::a[1]"],
+                "pager_attrs": {
+                    "image_urls": true,
+                    "content": "<br/>"
+                }
+            }
+        }
+    ],
+
+    "crawlers": {
+        "sites": [
+            "http://www.lady8844.com/hufu/mbhl/"
+        ],
+
+        "extractors": [
+            {
+                "name": "extractor_1",
+                "urls": [
+                    ["link", "//div[@class='t_Tit2']/a"]
+                ],
+                "extractors": [{
+                    "entity": "entity1"
+                }]
+            },
+            {
+                "name": "page_1",
+                "condition": [
+                    ["meta", "page"],
+                    ["eval", "%d <= 3"]
+                ],
+                "urls": ["link", "//a[@class='page-next']"],
+                "extractors": ["extractor_1", "page_1"],
+                "meta": {
+                    "page": [
+                        ["meta", "page"],
+                        ["eval", "%d + 1"]
+                    ]
+                }
+            }
+        ],
+        "meta": {
+            "page": ["const", 1]
+        }
+    }
+}

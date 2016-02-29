@@ -1,0 +1,70 @@
+{
+    "name": "腾讯",
+    "entities": [
+        {
+            "name": "entity1",
+            "attrs": {
+                "title": ["xpath", "//div[@class='qq_article']/div/h1/text()"],
+                "content": [
+                    ["xpath", "//div[@class='Cnt-Main-Article-QQ']"],
+                    ["resub", "<script.*?(?:</script>|/>)", ""],
+                    ["resub", "<style.*?(?:</style>|/>)", ""],
+                    ["resub", "</?iframe.*?/?>", ""]
+                ],
+                "image_urls": [
+                    ["xpath", "//div[@class='Cnt-Main-Article-QQ']/descendant::img/@src", true],
+                    ["url_join"]
+                ],
+                "description": ["xpath", "//meta[@name='Description']/@content"],
+                "source_name": [
+                    ["xpath", "//span[@class='a_source']/descendant::text()"]
+                ],
+                "source_url": ["const", ""],
+                "pub_time": ["xpath", "//span[@class='a_time']/text()"],
+                "abstraction": [
+                    ["xpath", "//p[@class='titdd-Article']/descendant::text()", true],
+                    ["join", ""],
+                    // 去掉前面的"[摘要]"4个字符
+                    ["substr", 4],
+                    ["default", ""]
+                ]
+            }
+        },
+        {
+            // 轮播的图片地址
+            "name": "imglist",
+            "attrs": {
+                "image_urls": [
+                    //["json", "Children[0].Children[1].Children[*].Children[2].Children[0].Content"]
+                    ["json", "Name"]
+                ]
+            }
+        }
+    ],
+
+    "crawlers": {
+        "sites": [
+            "http://ent.qq.com/star/"
+        ],
+
+        "extractors": [
+            {
+                "name": "extractor_1",
+                "urls": [
+                    ["link", "//h2[@class='title']/a"]
+                ],
+                "extractors": [
+                    {
+                        "condition": ["xpath", "//div[@class='gallery']|//div[@id='picWrap']"],
+                        "last": true
+                    },
+                    {
+                        // 根据正文判断是否采用这个模板
+                        "condition": ["xpath", "//div[@class='Cnt-Main-Article-QQ']"],
+                        "entity": "entity1"
+                    }
+                ]
+            }
+        ]
+    }
+}

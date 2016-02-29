@@ -1,0 +1,126 @@
+{
+    "name": "网易",
+
+    // 模板
+    "entities": [
+        {
+            // 用于extractors中
+            "name": "name1",
+
+            // 用于继承别的entity的attrs定义，本身的attrs, pagers定义会覆盖同名key的定义
+            "extends": "another_entity_name",
+
+            // 要提取的模板
+            "attrs": {
+                // 属性，value为procedure pipeline
+                "attr_name": [
+                    ["xpath", "//div", true],
+                    ["css", ".class_name", true],
+                    ["re", "re expression"],
+                    ["replace", "pattern", "replace str"],
+                    ["join", "\\n"],
+                    ["default", "abc"],
+                    ["const", "value"],
+                    ["time", "yyyy-MM-dd HH:mm:ss"]
+                ],
+
+                // 如果只有一个处理步骤，可以是1维数组
+                "attr_name2": ["xpath", "//div"]
+            },
+
+            "pager": {
+                "next_url": [
+                    "url"
+                ],
+                "pager_attrs": {
+                    // 表示组成数组
+                    "attr_name": true,
+                    // value是字符串表示用这个间隔join成一个字符串
+                    "attr_name2": "\\n"
+                }
+            }
+        },
+        {}
+    ],
+
+    // 可多个
+    "crawlers": {
+        // 第一级一般是固定地址入口数组
+        "sites": ["urls1", "urls2"],
+
+        // 页面解析器，可多个
+        "extractors": [
+            {
+                // optional, 用于页面循环深入抓取
+                "name": "extractor name 1",
+
+                "extends": "extractor name",
+
+                // condition, 如果condition解析值为false，则不执行这个extractor
+                "condition": [
+                    ["xpath", "//div"]
+                ],
+
+                // 是否不再执行后续的extract，默认为false
+                "last": true,
+
+                // 需要继续访问的urls
+                "urls": [
+                    ["xpath", "//div/a/@href"],
+                    ["re", "/\\d+\\.html"]
+                ],
+
+                "extrators": [{
+                    "name": "extractor name",
+                    // optional, 使用哪个模板抓取数据
+                    "entity": "entity name1",
+                    // 比如还要抓取相关阅读列表里的文章
+                    "urls": ["xpath", "//div/a/@href"],
+                    "extrators": ["extractor name"]
+                }]
+            },
+            {
+                "name": "page1",
+                "urls": [],
+                "extrators": ["extractor name 1", "page1"]
+            }
+        ]
+    }
+}
+
+
+
+
+/*
+
+===============================
+entity attr处理项
+===============================
+xpath path select
+scrapy自带的xapth解析
+@param string path
+@param boolean multi 为true返回数组，否则返回第一个元素
+@param boolean select 为true返回scrapy.selector.SelectorList，用于迭代选择
+@return string|array|SelectorList
+
+------------------------------
+css path select
+scrapy自带的css解析, https://www.w3.org/TR/2011/REC-css3-selectors-20110929/
+@param string path 
+@param boolean select 为true返回scrapy.selector.SelectorList，用于迭代选择
+@return string|array|SelectorList
+
+------------------------------
+re expression
+正则表达式，如果含有捕获元组，则返回捕捉的元组, 如果没有，则判断整个串是否匹配，过滤掉不匹配的
+@param string expression    带捕捉元组的正则表达式
+@return string        字符串
+
+------------------------------
+replace pattern replacement
+字符串替换
+@param string pattern
+@param string replacement
+@return string
+
+*/
